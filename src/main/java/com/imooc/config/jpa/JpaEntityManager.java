@@ -1,5 +1,6 @@
 package com.imooc.config.jpa;
 
+import com.imooc.config.datasource.DataSourceConfiguration;
 import com.imooc.config.datasource.DynamicDataSourceRouter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * repository方式
+ * jpa配置
  */
 @Slf4j
 @SuppressWarnings("all")
@@ -36,10 +37,10 @@ public class JpaEntityManager {
     @Autowired
     private JpaProperties jpaProperties;
 
-    @Resource(name = "masterDataSource")
+    @Resource(name = DataSourceConfiguration.MASTER)
     private DataSource masterDataSource;
 
-    @Resource(name = "slaveDataSource")
+    @Resource(name = DataSourceConfiguration.SLAVE)
     private DataSource slaveDataSource;
 
     //    @Primary
@@ -47,10 +48,8 @@ public class JpaEntityManager {
     public AbstractRoutingDataSource routingDataSource() {
         DynamicDataSourceRouter proxy = new DynamicDataSourceRouter();
         Map<Object, Object> targetDataSources = new HashMap<>(2);
-        targetDataSources.put("masterDataSource", masterDataSource);
-        targetDataSources.put("slaveDataSource", slaveDataSource);
-
-        proxy.setDefaultTargetDataSource(masterDataSource);
+        targetDataSources.put(DataSourceConfiguration.MASTER, masterDataSource);//数据源1
+        targetDataSources.put(DataSourceConfiguration.SLAVE, slaveDataSource);//数据源2
         proxy.setTargetDataSources(targetDataSources);
         return proxy;
     }
@@ -63,7 +62,6 @@ public class JpaEntityManager {
         //要设置这个属性，实现 CamelCase -> UnderScore 的转换
         properties.put("hibernate.physical_naming_strategy",
                 "org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy");
-
         return builder
                 .dataSource(routingDataSource())//关键：注入routingDataSource
                 .properties(properties)
@@ -83,6 +81,4 @@ public class JpaEntityManager {
     public PlatformTransactionManager transactionManager(EntityManagerFactoryBuilder builder) {
         return new JpaTransactionManager(entityManagerFactory(builder));
     }
-
-
 }

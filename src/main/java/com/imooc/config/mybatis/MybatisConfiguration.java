@@ -10,8 +10,6 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
 import org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration;
 import org.mybatis.spring.boot.autoconfigure.MybatisProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -28,19 +26,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * mybatis配置
+ */
 @Slf4j
 @Configuration
 @AutoConfigureAfter({DataSourceConfiguration.class})
-@MapperScan(basePackages = {"com.imooc.dao.mapper"})
+@MapperScan(basePackages = {"com.imooc.dao.mapper"})//指定mapper位置
 @EnableTransactionManagement
 @ConditionalOnClass({EnableTransactionManagement.class})
 public class MybatisConfiguration extends MybatisAutoConfiguration {
-    private Logger log = LoggerFactory.getLogger(Object.class);
 
-    @Resource(name = "masterDataSource")
+    @Resource(name = DataSourceConfiguration.MASTER)
     private DataSource masterDataSource;
 
-    @Resource(name = "slaveDataSource")
+    @Resource(name = DataSourceConfiguration.SLAVE)
     private DataSource slaveDataSource;
 
     public MybatisConfiguration(MybatisProperties properties, ObjectProvider<Interceptor[]> interceptorsProvider,
@@ -58,19 +58,14 @@ public class MybatisConfiguration extends MybatisAutoConfiguration {
     public AbstractRoutingDataSource roundRobinDataSouceProxy() {
         DynamicDataSourceRouter proxy = new DynamicDataSourceRouter();
         Map<Object, Object> targetDataSources = new HashMap<>(2);
-        targetDataSources.put("masterDataSource", masterDataSource);
-        targetDataSources.put("slaveDataSource", slaveDataSource);
-
-        proxy.setDefaultTargetDataSource(masterDataSource);
+        targetDataSources.put(DataSourceConfiguration.MASTER, masterDataSource);//数据源1
+        targetDataSources.put(DataSourceConfiguration.SLAVE, slaveDataSource);//数据源2
         proxy.setTargetDataSources(targetDataSources);
         return proxy;
     }
 
     @Bean(name = "transactionManager")
     public DataSourceTransactionManager transactionManagers() {
-        log.info("-------------------- transactionManager init ---------------------");
         return new DataSourceTransactionManager(roundRobinDataSouceProxy());
     }
-
-
 }

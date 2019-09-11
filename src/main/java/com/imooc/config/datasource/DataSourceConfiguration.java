@@ -13,11 +13,14 @@ import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
 
+/**
+ * 数据源配置
+ */
 @Slf4j
 @Configuration
 public class DataSourceConfiguration {
-    private final static String MASTER_DATASOURCE_KEY = "masterDataSource";
-    private final static String SLAVE_DATASOURCE_KEY = "slaveDataSource";
+    public final static String MASTER = "masterDataSource";//数据源1
+    public final static String SLAVE = "slaveDataSource";//数据源2
     private Logger log = LoggerFactory.getLogger(Object.class);
 
     /**
@@ -31,10 +34,10 @@ public class DataSourceConfiguration {
      *
      * @return
      */
-    @Primary
-    @Bean(value = MASTER_DATASOURCE_KEY)
-    @Qualifier(MASTER_DATASOURCE_KEY)
-    @ConfigurationProperties(prefix = "spring.datasource.master")
+    @Primary//主数据源标识(必须指定一个)
+    @Bean(value = MASTER)//别名
+    @Qualifier(MASTER)//别名
+    @ConfigurationProperties(prefix = "spring.datasource.master")//数据源信息
     public DataSource masterDataSource() {
         log.info("create master datasource...");
         return DataSourceBuilder.create().type(dataSourceType).build();
@@ -45,9 +48,8 @@ public class DataSourceConfiguration {
      *
      * @return
      */
-//    @Primary
-    @Bean(value = SLAVE_DATASOURCE_KEY)
-    @Qualifier(SLAVE_DATASOURCE_KEY)
+    @Bean(value = SLAVE)
+    @Qualifier(SLAVE)
     @ConfigurationProperties(prefix = "spring.datasource.slave")
     public DataSource slaveDataSource() {
         log.info("create slave datasource...");
