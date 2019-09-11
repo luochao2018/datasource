@@ -1,0 +1,30 @@
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "masterDataSource": [
+      {
+        "name": "李丽丽",
+        "id": "1",
+        "age": "20"
+      },
+      {
+        "name": "吴定富",
+        "id": "2",
+        "age": "19"
+      }
+    ],
+    "slaveDataSource": [
+      {
+        "name": "李丽丽",
+        "id": "1",
+        "age": "20"
+      },
+      {
+        "name": "吴定富",
+        "id": "2",
+        "age": "19"
+      }
+    ]
+  }
+}
